@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "897266611569",
+    "firebase_url": "https://quickq-17384-default-rtdb.firebaseio.com",
+    "project_id": "quickq-17384",
+    "storage_bucket": "quickq-17384.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:897266611569:android:a9b796246ae6282f50f2d0",
+        "android_client_info": {
+          "package_name": "com.example.quickq"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "897266611569-fv4ive9ppdf0io0gkgru7o8mas0nd2i6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXv_2BX_OKWHuqQAopE-v9SasFku-6-Eo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "897266611569-abl8rk0jd0619f40fh662qso8s1nqf2j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
