@@ -109,20 +109,6 @@ fun LogInScreen() {
         Spacer(modifier = Modifier
             .height(32.dp)
         )
-
-        Text(text = "Or sign in with")
-
-        Spacer(modifier = Modifier
-            .height(32.dp)
-        )
-
-        Image(painter = painterResource(id = R.drawable.google),
-            contentDescription = "Google",
-            modifier = Modifier
-                .size(60.dp)
-                .clickable { /*TODO*/ }
-
-        )
     }
 }
 
