@@ -1,24 +1,22 @@
 package com.example.quickqbusiness
 
-import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,12 +29,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.startActivity
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.quickqbusiness.ui.theme.QuickQBusinessTheme
 
 @Composable
-fun LogInScreen() {
+fun LogInScreen(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
 
+    val authState = authViewModel.authState.observeAsState()
     val context = LocalContext.current
 
     var email by remember {
@@ -47,28 +47,34 @@ fun LogInScreen() {
         mutableStateOf("")
     }
 
+    LaunchedEffect(authState.value) {
+        when (authState.value) {
+            is AuthState.Authenticated -> navController.navigate("home")
+            is AuthState.Error -> Toast.makeText(context,
+                (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+            else ->Unit
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(painter = painterResource(id = R.drawable.queue), contentDescription = "Log In Image",
-            modifier = Modifier
-                .size(300.dp)
+        Image(
+            painter = painterResource(id = R.drawable.queue),
+            contentDescription = "Log In Image",
+            modifier = Modifier.size(300.dp)
         )
-        
+
         Text(text = "Hello", fontSize = 28.sp, fontWeight = FontWeight.Bold)
 
-        Spacer(modifier = Modifier
-            .height(4.dp)
-        )
+        Spacer(modifier = Modifier.height(4.dp))
 
         Text(text = "Log In to your account")
 
-        Spacer(modifier = Modifier
-            .height(16.dp)
-        )
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(value = email, onValueChange = {
             email = it
@@ -76,9 +82,7 @@ fun LogInScreen() {
             Text(text = "Email address")
         })
 
-        Spacer(modifier = Modifier
-            .height(16.dp)
-        )
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(value = password, onValueChange = {
             password = it
@@ -87,35 +91,28 @@ fun LogInScreen() {
         }, visualTransformation = PasswordVisualTransformation()
         )
 
-        Spacer(modifier = Modifier
-            .height(16.dp)
-        )
-
+        Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
             Log.i("Credentials", "Email: $email, Password: $password")
-            context.startActivity(Intent(context, HomePage::class.java))
+            authViewModel.signIn(email, password)
         }) {
             Text(text = "Log In")
         }
 
-        Spacer(modifier = Modifier
-            .height(16.dp)
-        )
+        Spacer(modifier = Modifier.height(16.dp))
 
         TextButton(onClick = { /*TODO*/ }) {
             Text(text = "Forgot Password?")
         }
 
-        Spacer(modifier = Modifier
-            .height(32.dp)
-        )
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun LogInPreview() {
-    QuickQBusinessTheme {
-        LogInScreen()
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun LogInPreview() {
+//    QuickQBusinessTheme {
+////        LogInScreen(modifier = Modifier, authViewModel = authViewModel)
+//    }
+//}
