@@ -18,8 +18,6 @@ import com.example.quickqbusiness.model.NavItem
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.quickqbusiness.pages.AcceptedOrder
 
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
