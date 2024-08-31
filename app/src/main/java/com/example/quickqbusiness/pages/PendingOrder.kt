@@ -1,4 +1,4 @@
-package com.example.quickqbusiness
+package com.example.quickqbusiness.pages
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +32,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.quickqbusiness.AuthState
+import com.example.quickqbusiness.AuthViewModel
+import com.example.quickqbusiness.R
 import com.example.quickqbusiness.data.Order
 import com.example.quickqbusiness.model.OrderData
 import com.example.quickqbusiness.ui.theme.QuickQBusinessTheme
@@ -64,9 +67,9 @@ fun PendingOrder(modifier: Modifier, navController: NavController, authViewModel
             )
     ) {
         Column(
-            modifier = Modifier,
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(8.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
         ) {
             Text(text = "Pending Orders", fontSize = 32.sp)
             OrderList(orderList = Order().loadOrders())
@@ -82,7 +85,7 @@ fun OrderCard(order: OrderData, modifier: Modifier = Modifier) {
     Card(modifier = modifier
         .fillMaxWidth()) {
         Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
+            horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -90,32 +93,37 @@ fun OrderCard(order: OrderData, modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(8.dp),
                 style = MaterialTheme.typography.headlineSmall
             )
-            Text(
-                text = order.quantity,
-                modifier = Modifier.padding(8.dp),
-                style = MaterialTheme.typography.headlineSmall
-            )
-            Text(
-                text = order.price,
-                modifier = Modifier.padding(8.dp),
-                style = MaterialTheme.typography.headlineSmall
-            )
-            Image(
-                painter = painterResource(order.remove),
-                contentDescription = "Remove Item",
-                modifier = Modifier
-                    .padding(6.dp)
-                    .height(30.dp),
-//                contentScale = ContentScale.Crop
-            )
-            Image(
-                painter = painterResource(order.check),
-                contentDescription = "Confirm Item",
-                modifier = Modifier
-                    .padding(8.dp)
-                    .height(30.dp),
-//                contentScale = ContentScale.Crop
-            )
+            Row (
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = order.price,
+                    modifier = Modifier.padding(8.dp),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Text(
+                    text = order.quantity,
+                    modifier = Modifier.padding(8.dp),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Image(
+                    painter = painterResource(order.remove),
+                    contentDescription = "Remove Item",
+                    modifier = Modifier
+                        .padding(6.dp)
+                        .height(30.dp),
+                    //                contentScale = ContentScale.Crop
+                )
+                Image(
+                    painter = painterResource(order.check),
+                    contentDescription = "Confirm Item",
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .height(30.dp),
+                    //                contentScale = ContentScale.Crop
+                )
+            }
         }
     }
 }
