@@ -1,9 +1,12 @@
 package com.example.quickqbusiness
 
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class AuthViewModel: ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -28,11 +31,29 @@ class AuthViewModel: ViewModel() {
             _authState.value = AuthState.Error("Email or password cannot be empty.")
         }
 
+        val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+
         _authState.value = AuthState.Loading
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener {task->
                 if(task.isSuccessful) {
-                    _authState.value = AuthState.Authenticated
+                    db.collection("owner").get()
+                        .addOnSuccessListener { queryDocumentSnapshots->
+                            if(!queryDocumentSnapshots.isEmpty) {
+                                val users = queryDocumentSnapshots.documents
+                                val emailExists = users.any { document ->
+                                    document.id == email
+                                }
+                                if (emailExists) {
+                                    _authState.value = AuthState.Authenticated
+                                } else {
+                                    _authState.value = AuthState.Error(task.exception?.message?:"Please log in as a Shopkeeper")
+                                }
+
+                            } else {
+                                _authState.value = AuthState.Error(task.exception?.message?:"Something went wrong")
+                            }
+                        }
                 } else {
                     _authState.value = AuthState.Error(task.exception?.message?:"Something went wrong")
                 }

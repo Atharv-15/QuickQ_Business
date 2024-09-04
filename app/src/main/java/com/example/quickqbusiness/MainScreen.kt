@@ -2,6 +2,8 @@ package com.example.quickqbusiness
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -16,8 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import com.example.quickqbusiness.model.NavItem
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.navigation.NavController
+import com.example.quickqbusiness.data.Order
 
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
@@ -30,10 +34,16 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController, auth
         }
     }
 
+    val pendingSize by remember {
+        derivedStateOf {
+            Order().loadOrders().size
+        }
+    }
+
     val navItemList = listOf(
-        NavItem("Pending", R.drawable.pending),
-        NavItem("Accepted", R.drawable.accept),
-        NavItem("Profile", R.drawable.profile)
+        NavItem("Pending", R.drawable.pending, pendingSize),
+        NavItem("Accepted", R.drawable.accept, 0),
+        NavItem("Profile", R.drawable.profile, 0)
     )
     var selectedIndex by remember {
         mutableIntStateOf(1)
@@ -50,7 +60,15 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController, auth
                             selectedIndex = index
                         },
                         icon = {
-                            Icon(painter = painterResource(id = navItem.icon), contentDescription = "Icon")
+                            BadgedBox(badge = {
+                                if (navItem.count > 0) {
+                                    Badge {
+                                        Text(text = navItem.count.toString())
+                                    }
+                                }
+                            }) {
+                                Icon(painter = painterResource(id = navItem.icon), contentDescription = "Icon")
+                            }
                         },
                         label = {
                             Text(text = navItem.label)
