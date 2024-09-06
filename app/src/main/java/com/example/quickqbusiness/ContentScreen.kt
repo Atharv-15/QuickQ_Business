@@ -12,6 +12,6 @@ fun ContentScreen(modifier: Modifier = Modifier, navController: NavController, a
     when(selectedIndex) {
         0 -> PendingOrder(modifier, navController, authViewModel)
         1 -> AcceptedOrder()
-        2 -> Profile()
+        2 -> Profile(modifier, authViewModel)
     }
 }

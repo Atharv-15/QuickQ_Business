@@ -2,6 +2,7 @@ package com.example.quickqbusiness
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
@@ -20,6 +21,7 @@ import com.example.quickqbusiness.model.NavItem
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.quickqbusiness.data.Order
 
@@ -67,7 +69,11 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController, auth
                                     }
                                 }
                             }) {
-                                Icon(painter = painterResource(id = navItem.icon), contentDescription = "Icon")
+                                Icon(
+                                    painter = painterResource(id = navItem.icon),
+                                    contentDescription = "Icon",
+                                    modifier= Modifier.size(24.dp)
+                                )
                             }
                         },
                         label = {
