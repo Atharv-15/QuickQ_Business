@@ -1,10 +1,10 @@
-package com.example.quickqbusiness
+package com.example.quickqbusiness.viewModel
 
-import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.quickqbusiness.model.OrderData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -47,15 +47,20 @@ class AuthViewModel: ViewModel() {
                                 if (emailExists) {
                                     _authState.value = AuthState.Authenticated
                                 } else {
-                                    _authState.value = AuthState.Error(task.exception?.message?:"Please log in as a Shopkeeper")
+                                    _authState.value = AuthState.Error(
+                                        task.exception?.message ?: "Please log in as a Shopkeeper"
+                                    )
                                 }
 
                             } else {
-                                _authState.value = AuthState.Error(task.exception?.message?:"Something went wrong")
+                                _authState.value = AuthState.Error(
+                                    task.exception?.message ?: "Something went wrong"
+                                )
                             }
                         }
                 } else {
-                    _authState.value = AuthState.Error(task.exception?.message?:"Something went wrong")
+                    _authState.value =
+                        AuthState.Error(task.exception?.message ?: "Something went wrong")
                 }
             }
     }

@@ -18,13 +18,20 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -32,24 +39,34 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.quickqbusiness.AuthState
-import com.example.quickqbusiness.AuthViewModel
+import com.example.quickqbusiness.viewModel.AuthState
+import com.example.quickqbusiness.viewModel.AuthViewModel
 import com.example.quickqbusiness.R
-import com.example.quickqbusiness.data.Order
 import com.example.quickqbusiness.model.OrderData
-
+import com.example.quickqbusiness.model.OrderDataWithId
+import com.example.quickqbusiness.viewModel.OrderViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun PendingOrder(modifier: Modifier, navController: NavController, authViewModel: AuthViewModel) {
+fun PendingOrder(modifier: Modifier, shopId: String, navController: NavController, authViewModel: AuthViewModel, orderViewModel: OrderViewModel) {
 
     val authState = authViewModel.authState.observeAsState()
-    val layoutDirection = LocalLayoutDirection.current
-
     LaunchedEffect(authState.value) {
         when(authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("signin")
             else -> Unit
         }
+    }
+
+    val layoutDirection = LocalLayoutDirection.current
+
+    // Observe the orderListWithIds from the ViewModel
+    val orderList by orderViewModel.orderListWithIds.observeAsState(emptyList())
+
+    // Start listening for pending orders
+    LaunchedEffect(shopId) {
+        orderViewModel.startListeningForPendingOrders(shopId)
     }
 
     Surface(
@@ -67,18 +84,49 @@ fun PendingOrder(modifier: Modifier, navController: NavController, authViewModel
             )
     ) {
         Column(
-            modifier = Modifier.padding(8.dp).navigationBarsPadding(),
+            modifier = Modifier
+                .padding(8.dp)
+                .navigationBarsPadding(),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
             Text(text = "Pending Orders", fontSize = 32.sp)
-            OrderList(orderList = Order().loadOrders())
+            LazyColumn(modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)) {
+                items(orderList) { orderDataWithId ->
+                    OrderCard(
+                        order = orderDataWithId.orderData,
+                        orderId = orderDataWithId.id,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+            }
         }
     }
 }
 
+
 @Composable
-fun OrderCard(order: OrderData, modifier: Modifier = Modifier) {
+fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) {
+
+    var customerName by remember { mutableStateOf("") } // Store customer name
+    var totalAmount by remember { mutableIntStateOf(order.totalPrice) } // Store total amount
+
+    // Fetch userId from Firestore when this composable loads
+
+    // Fetch totalPrice from Firestore when this composable loads
+    LaunchedEffect(orderId) {
+        val orderRef = FirebaseFirestore.getInstance().collection("orders").document(orderId)
+        orderRef.get().addOnSuccessListener { document ->
+            if (document != null && document.exists()) {
+                val fetchedTotalPrice = document.getLong("totalAmount")
+                totalAmount = fetchedTotalPrice?.toInt() ?: order.totalPrice
+
+                val fetchedUserName = document.getString("userName")
+                customerName = fetchedUserName ?: "Unknown"
+            }
+        }
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -94,13 +142,13 @@ fun OrderCard(order: OrderData, modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = order.description, // Order Name
-                    style = MaterialTheme.typography.headlineSmall,
+                    text = customerName, // Order Name
+                    style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.weight(1f) // Take available space
                 )
 
                 Text(
-                    text = "Total: ${order.totalPrice}", // Total Price
+                    text = "Total: $totalAmount", // Total Price
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(end = 8.dp)
                 )
@@ -168,20 +216,6 @@ fun OrderCard(order: OrderData, modifier: Modifier = Modifier) {
                     }
                 }
             }
-        }
-    }
-}
-
-
-
-@Composable
-fun OrderList(orderList: List<OrderData>, modifier: Modifier = Modifier) {
-    LazyColumn(modifier = Modifier.padding(bottom = 80.dp)) {
-        items(orderList) { order ->
-            OrderCard(
-                order = order,
-                modifier = Modifier.padding(8.dp)
-            )
         }
     }
 }

@@ -20,15 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.quickqbusiness.AuthViewModel
-import com.example.quickqbusiness.data.Order
-import com.google.firebase.firestore.FirebaseFirestore
+import com.example.quickqbusiness.viewModel.AuthViewModel
 
 @Composable
-fun Profile(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
+fun Profile(modifier: Modifier = Modifier, authViewModel: AuthViewModel, shopId: String) {
     val layoutDirection = LocalLayoutDirection.current
-    val db: FirebaseFirestore = FirebaseFirestore.getInstance()
-//    val name = db.collection()
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -51,6 +47,10 @@ fun Profile(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
             Text(
                 text = "Profile",
                 fontSize = 40.sp
+            )
+            Text(
+                text = shopId,
+                fontSize = 24.sp
             )
             TextButton(onClick = {authViewModel.signOut()}) {
                 Text(text = "Sign Out")

@@ -1,5 +1,6 @@
 package com.example.quickqbusiness
 
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,11 +24,13 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.quickqbusiness.data.Order
+import com.example.quickqbusiness.viewModel.AuthState
+import com.example.quickqbusiness.viewModel.AuthViewModel
+import com.example.quickqbusiness.viewModel.OrderViewModel
+import com.example.quickqbusiness.viewModel.ShopViewModel
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
-
+fun MainScreen(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, shopViewModel: ShopViewModel, orderViewModel: OrderViewModel) {
     val authState = authViewModel.authState.observeAsState()
     LaunchedEffect(authState.value) {
         when(authState.value) {
@@ -36,9 +39,13 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController, auth
         }
     }
 
+    // Observe the order list with IDs
+    val orderListWithIds by orderViewModel.orderListWithIds.observeAsState(emptyList())
+
+    // Calculate the pending size based on the size of the orderListWithIds
     val pendingSize by remember {
         derivedStateOf {
-            Order().loadOrders().size
+            orderListWithIds.size
         }
     }
 
@@ -84,6 +91,6 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController, auth
             }
         }
     ) { innerPadding ->
-        ContentScreen(modifier = Modifier.padding(innerPadding), navController, authViewModel, selectedIndex)
+        ContentScreen(modifier = Modifier.padding(innerPadding), navController, authViewModel, selectedIndex, shopViewModel, orderViewModel)
     }
 }
