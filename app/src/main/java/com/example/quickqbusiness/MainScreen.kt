@@ -1,6 +1,5 @@
 package com.example.quickqbusiness
 
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,7 +29,14 @@ import com.example.quickqbusiness.viewModel.OrderViewModel
 import com.example.quickqbusiness.viewModel.ShopViewModel
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, shopViewModel: ShopViewModel, orderViewModel: OrderViewModel) {
+fun MainScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    shopViewModel: ShopViewModel,
+    orderViewModel: OrderViewModel
+) {
+    // From AppNavigation.kt
     val authState = authViewModel.authState.observeAsState()
     LaunchedEffect(authState.value) {
         when(authState.value) {
@@ -91,6 +97,12 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController, auth
             }
         }
     ) { innerPadding ->
-        ContentScreen(modifier = Modifier.padding(innerPadding), navController, authViewModel, selectedIndex, shopViewModel, orderViewModel)
+        ContentScreen(
+            modifier = Modifier.padding(innerPadding),
+            navController,
+            authViewModel,
+            shopViewModel,
+            orderViewModel,
+            selectedIndex)
     }
 }

@@ -15,7 +15,15 @@ import com.example.quickqbusiness.viewModel.ShopViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun ContentScreen(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, selectedIndex: Int, shopViewModel: ShopViewModel, orderViewModel: OrderViewModel) {
+fun ContentScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    shopViewModel: ShopViewModel,
+    orderViewModel: OrderViewModel,
+    selectedIndex: Int
+) {
+    // From MainScreen.kt
     val user = FirebaseAuth.getInstance().currentUser
     val email = user?.email ?: ""
 
@@ -36,9 +44,14 @@ fun ContentScreen(modifier: Modifier = Modifier, navController: NavController, a
                 PendingOrder(modifier, shopId = it, navController, authViewModel, orderViewModel)
             }
         }
-        1 -> AcceptedOrder()
+        1 -> {
+            // Pass shopId to AcceptedOrder if it's available
+            shopId?.let {
+                AcceptedOrder(modifier, shopId = it, navController, authViewModel, orderViewModel)
+            }
+        }
         2 -> {
-            // Pass shopId to PendingOrder if it's available
+            // Pass shopId to Profile if it's available
             shopId?.let {
                 Profile(modifier, authViewModel, shopId = it)
             }

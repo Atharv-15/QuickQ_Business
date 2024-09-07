@@ -42,6 +42,7 @@ import androidx.navigation.NavController
 import com.example.quickqbusiness.viewModel.AuthState
 import com.example.quickqbusiness.viewModel.AuthViewModel
 import com.example.quickqbusiness.R
+import com.example.quickqbusiness.data.OrderCard
 import com.example.quickqbusiness.model.OrderData
 import com.example.quickqbusiness.model.OrderDataWithId
 import com.example.quickqbusiness.viewModel.OrderViewModel
@@ -49,7 +50,13 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun PendingOrder(modifier: Modifier, shopId: String, navController: NavController, authViewModel: AuthViewModel, orderViewModel: OrderViewModel) {
+fun PendingOrder(
+    modifier: Modifier,
+    shopId: String,
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    orderViewModel: OrderViewModel
+) {
 
     val authState = authViewModel.authState.observeAsState()
     LaunchedEffect(authState.value) {
@@ -90,7 +97,10 @@ fun PendingOrder(modifier: Modifier, shopId: String, navController: NavControlle
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
-            Text(text = "Pending Orders", fontSize = 32.sp)
+            Text(
+                text = "Pending Orders",
+                fontSize = 32.sp
+            )
             LazyColumn(modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)) {
                 items(orderList) { orderDataWithId ->
                     OrderCard(
@@ -98,122 +108,6 @@ fun PendingOrder(modifier: Modifier, shopId: String, navController: NavControlle
                         orderId = orderDataWithId.id,
                         modifier = Modifier.padding(8.dp)
                     )
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) {
-
-    var customerName by remember { mutableStateOf("") } // Store customer name
-    var totalAmount by remember { mutableIntStateOf(order.totalPrice) } // Store total amount
-
-    // Fetch userId from Firestore when this composable loads
-
-    // Fetch totalPrice from Firestore when this composable loads
-    LaunchedEffect(orderId) {
-        val orderRef = FirebaseFirestore.getInstance().collection("orders").document(orderId)
-        orderRef.get().addOnSuccessListener { document ->
-            if (document != null && document.exists()) {
-                val fetchedTotalPrice = document.getLong("totalAmount")
-                totalAmount = fetchedTotalPrice?.toInt() ?: order.totalPrice
-
-                val fetchedUserName = document.getString("userName")
-                customerName = fetchedUserName ?: "Unknown"
-            }
-        }
-    }
-
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(8.dp)
-        ) {
-            // First row: Name, Total Price, Remove, Accept buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = customerName, // Order Name
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.weight(1f) // Take available space
-                )
-
-                Text(
-                    text = "Total: $totalAmount", // Total Price
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-
-                Image(
-                    painter = painterResource(R.drawable.remove), // Default remove icon
-                    contentDescription = "Remove Order",
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .height(24.dp)
-                        .clickable {
-                            // Handle remove order
-                        }
-                )
-
-                Image(
-                    painter = painterResource(R.drawable.check), // Default accept icon
-                    contentDescription = "Accept Order",
-                    modifier = Modifier
-                        .height(24.dp)
-                        .clickable {
-                            // Handle accept order
-                        }
-                )
-            }
-
-            // Second row: List of items (not scrollable)
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            ) {
-                order.items.forEach { item ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = item.name, // Item name
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        Text(
-                            text = "Qty: ${item.quantity}", // Item quantity
-                            modifier = Modifier.padding(end = 8.dp)
-                        )
-
-                        Text(
-                            text = "Price: ${item.price}", // Item price
-                            modifier = Modifier.padding(end = 8.dp)
-                        )
-
-                        Image(
-                            painter = painterResource(R.drawable.remove), // Default remove item icon
-                            contentDescription = "Remove Item",
-                            modifier = Modifier
-                                .height(24.dp)
-                                .clickable {
-                                    // Handle remove item
-                                }
-                        )
-                    }
                 }
             }
         }

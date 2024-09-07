@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 
 class ShopViewModel : ViewModel() {
-
+    // Used in ContentScreen.kt
     private val firestore = FirebaseFirestore.getInstance()
 
     // LiveData to hold the shopId

@@ -1,4 +1,4 @@
-package com.example.quickqbusiness
+package com.example.quickqbusiness.pages
 
 import android.util.Log
 import android.widget.Toast
@@ -29,6 +29,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.quickqbusiness.R
 import com.example.quickqbusiness.viewModel.AuthState
 import com.example.quickqbusiness.viewModel.AuthViewModel
 
