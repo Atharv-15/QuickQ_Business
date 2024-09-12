@@ -53,7 +53,7 @@ fun ContentScreen(
         2 -> {
             // Pass shopId to Profile if it's available
             shopId?.let {
-                Profile(modifier, authViewModel, shopId = it)
+                Profile(modifier, shopId = it, authViewModel, shopViewModel)
             }
         }
     }
