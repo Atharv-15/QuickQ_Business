@@ -38,7 +38,7 @@ fun PendingOrder(
     authViewModel: AuthViewModel,
     orderViewModel: OrderViewModel
 ) {
-
+    // Check Sign in status
     val authState = authViewModel.authState.observeAsState()
     LaunchedEffect(authState.value) {
         when(authState.value) {
