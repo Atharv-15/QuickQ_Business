@@ -1,6 +1,8 @@
 package com.example.quickqbusiness.viewModel
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,6 +14,8 @@ class AuthViewModel: ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val _authState = MutableLiveData<AuthState>()
     val authState: LiveData<AuthState> = _authState
+    private val firestore = FirebaseFirestore.getInstance()
+
 
     init {
         checkAuthStatus()
@@ -68,6 +72,38 @@ class AuthViewModel: ViewModel() {
     fun signOut() {
         auth.signOut()
         _authState.value = AuthState.Unauthenticated
+    }
+
+    // LiveData to hold the mail email id
+    private val _emailOriginal = MutableLiveData<String>()
+    val emailOriginal: LiveData<String> = _emailOriginal
+
+    // Function to fetch the shopId using email as the document ID
+    fun fetchOriginalMailByEmail(email: String) {
+        firestore.collection("owner").document(email)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    _emailOriginal.value = document.getString("email") ?: ""
+                } else {
+                    Log.d("Firestore", "No document found for email: $email")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error fetching shopId", e)
+            }
+    }
+
+    // Function to send password reset email
+    fun sendPasswordResetEmail(email: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+        auth.sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    onSuccess()
+                } else {
+                    task.exception?.message?.let { onFailure(it) }
+                }
+            }
     }
 }
 

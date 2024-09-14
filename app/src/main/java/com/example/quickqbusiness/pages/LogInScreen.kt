@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -25,11 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.quickqbusiness.R
+import com.example.quickqbusiness.data.ForgotPasswordDialog
 import com.example.quickqbusiness.viewModel.AuthState
 import com.example.quickqbusiness.viewModel.AuthViewModel
 
@@ -56,6 +60,8 @@ fun LogInScreen(modifier: Modifier = Modifier, navController: NavController, aut
         }
     }
 
+    var showForgotPasswordDialog by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -80,7 +86,10 @@ fun LogInScreen(modifier: Modifier = Modifier, navController: NavController, aut
             email = it
         }, label = {
             Text(text = "Email address")
-        })
+        }, keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Next
+        )
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -88,7 +97,10 @@ fun LogInScreen(modifier: Modifier = Modifier, navController: NavController, aut
             password = it
         }, label = {
             Text(text = "Password")
-        }, visualTransformation = PasswordVisualTransformation()
+        }, visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Done
+        )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -101,18 +113,17 @@ fun LogInScreen(modifier: Modifier = Modifier, navController: NavController, aut
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = { /*TODO*/ }) {
+        TextButton(onClick = { showForgotPasswordDialog = true }) {
             Text(text = "Forgot Password?")
+        }
+
+        if (showForgotPasswordDialog) {
+            ForgotPasswordDialog(
+                authViewModel = authViewModel,
+                onDismiss = { showForgotPasswordDialog = false }
+            )
         }
 
         Spacer(modifier = Modifier.height(32.dp))
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun LogInPreview() {
-//    QuickQBusinessTheme {
-////        LogInScreen(modifier = Modifier, authViewModel = authViewModel)
-//    }
-//}
