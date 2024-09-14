@@ -74,6 +74,7 @@ class AuthViewModel: ViewModel() {
         _authState.value = AuthState.Unauthenticated
     }
 
+    // get original mail id from the shopkeeper id
     // LiveData to hold the mail email id
     private val _emailOriginal = MutableLiveData<String>()
     val emailOriginal: LiveData<String> = _emailOriginal
