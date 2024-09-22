@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,13 +31,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.quickqbusiness.R
 import com.example.quickqbusiness.model.OrderData
+import com.example.quickqbusiness.model.OrderItemData
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
@@ -44,6 +44,11 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
     // Used in PendingOrder.kt
     var customerName by remember { mutableStateOf("") } // Store customer name
     var totalAmount by remember { mutableIntStateOf(order.totalPrice) } // Store total amount
+    var note by remember { mutableStateOf("") } // Store order notes from customer
+    var isAnyItemSelected by remember { mutableStateOf(false) } // Check if at least one item is not removed
+    val itemState = remember { mutableStateListOf(*order.items.toTypedArray()) } // Track item status locally
+
+    val context = LocalContext.current // Get the current context
 
     // Fetch totalPrice and customerName from Firestore when this composable loads
     LaunchedEffect(orderId) {
@@ -52,8 +57,14 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
             if (document != null && document.exists()) {
                 totalAmount = document.getLong("totalAmount")?.toInt() ?: order.totalPrice
                 customerName = document.getString("userName") ?: "Unknown"
+                note = document.getString("note") ?: "Have a good day :)"
             }
         }
+    }
+
+    // Check if there's any item left that is not removed
+    LaunchedEffect(itemState) {
+        isAnyItemSelected = itemState.any { it.status == "Selected" }
     }
 
     var showDialog by remember { mutableStateOf(false) } // Control dialog visibility
@@ -67,7 +78,7 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
             confirmButton = {
                 Button(onClick = {
                     showDialog = false
-                    acceptOrder(orderId)
+                    acceptOrder(orderId, itemState)
                 }) {
                     Text("Confirm")
                 }
@@ -83,7 +94,6 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
     // Decline Order Dialog
     var showDeclineDialog by remember { mutableStateOf(false) } // Control decline dialog visibility
     var declineReason by remember { mutableStateOf("") } // Store selected decline reason
-    val context = LocalContext.current // Get the current context
 
     // Decline Order Dialog
     if (showDeclineDialog) {
@@ -128,10 +138,10 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
                         } else {
                             showDeclineDialog = false
                             declineOrder(orderId, declineReason) // Trigger decline order callback
+                            declineReason = ""
                         }
                     },
                     modifier = Modifier.alpha(if (declineReason.isBlank()) 0.5f else 1f) // Change opacity when disabled
-//                    enabled = declineReason.isNotBlank() // Only enable button if reason is provided
                 ) {
                     Text("Decline")
                 }
@@ -139,11 +149,35 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
             dismissButton = {
                 Button(onClick = { showDeclineDialog = false }) {
                     Text("Cancel")
+                    declineReason = ""
                 }
             }
         )
     }
 
+    // Accept order logic
+    fun handleAcceptOrder() {
+        if (isAnyItemSelected) {
+            // Update order status and items status in Firebase
+            showDialog = true
+        } else {
+            // Show a toast saying "Please select at least one item."
+            Toast.makeText(context, "Please select at least one item", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Toggle the status of an item (Selected/Removed)
+    fun toggleItemStatus(itemId: String) {
+        val index = itemState.indexOfFirst { it.id == itemId }
+        if (index != -1) {
+            val currentItem = itemState[index]
+            val newStatus = if (currentItem.status == "Selected") "Removed" else "Selected"
+            itemState[index] = currentItem.copy(status = newStatus)
+
+            // Recheck if there is any item selected after toggling
+            isAnyItemSelected = itemState.any { it.status == "Selected" }
+        }
+    }
 
     Card(
         modifier = modifier
@@ -185,13 +219,13 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
                 )
 
                 Image(
-                    painter = painterResource(R.drawable.check), // Default accept icon
+                    painter = painterResource(if (isAnyItemSelected) R.drawable.check else R.drawable.checkalt), // Toggle icon
                     contentDescription = "Accept Order",
                     modifier = Modifier
                         .height(24.dp)
                         .clickable {
                             // Handle accept order
-                            showDialog = true
+                            handleAcceptOrder()
                         }
                 )
             }
@@ -202,11 +236,12 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             ) {
-                order.items.forEach { item ->
+                itemState.forEach { item ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(4.dp),
+                            .padding(4.dp)
+                            .alpha(if (item.status == "Removed") 0.5f else 1f), // Dim the row if item is removed
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -232,33 +267,55 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
                                 .height(24.dp)
                                 .clickable {
                                     // Handle remove item
+                                    toggleItemStatus(item.id) // Toggle item status
                                 }
                         )
                     }
                 }
             }
+            Text(
+                text = "Note: $note", // Total Price
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(end = 8.dp)
+            )
         }
     }
 }
 
-fun acceptOrder(orderId: String) {
+fun acceptOrder(orderId: String, items: List<OrderItemData>) {
     val orderRef = FirebaseFirestore.getInstance().collection("orders").document(orderId)
 
-    // Update the status field to "Confirmed"
-    orderRef.update("status", "Confirmed")
+    // Update the order's status and the status of each item
+    val updatedItems = items.map { item ->
+        mapOf(
+            "id" to item.id,
+            "name" to item.name,
+            "quantity" to item.quantity,
+            "price" to item.price,
+            "status" to item.status
+        )
+    }
+
+    orderRef.update("items", updatedItems, "status", "Accepted")
         .addOnSuccessListener {
-            Log.d("OrderStatus", "Order $orderId confirmed successfully.")
+            Log.d("OrderStatus", "Order $orderId accepted with items updated.")
         }
         .addOnFailureListener { e ->
-            Log.w("OrderStatus", "Error confirming order $orderId", e)
+            Log.w("OrderStatus", "Error accepting order $orderId", e)
         }
 }
 
 fun declineOrder(orderId: String, reason: String) {
     val orderRef = FirebaseFirestore.getInstance().collection("orders").document(orderId)
 
-    // Update the status and reason field to "Declined"
-    orderRef.update("status", "Declined", "declineReason", reason)
+    // Update the status and add a new field called declineReason
+    orderRef.update(
+        mapOf(
+            "status" to "Declined",
+            "declineReason" to reason // Add a new field for the reason
+        )
+    )
         .addOnSuccessListener {
             Log.d("OrderStatus", "Order $orderId declined with reason: $reason")
         }
