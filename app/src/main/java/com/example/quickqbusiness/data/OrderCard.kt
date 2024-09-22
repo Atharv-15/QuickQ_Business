@@ -46,6 +46,7 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
     var totalAmount by remember { mutableIntStateOf(order.totalPrice) } // Store total amount
     var note by remember { mutableStateOf("") } // Store order notes from customer
     var isAnyItemSelected by remember { mutableStateOf(false) } // Check if at least one item is not removed
+    var isAnyItemRemoved by remember { mutableStateOf(false) } // Check if at least one item is not removed
     val itemState = remember { mutableStateListOf(*order.items.toTypedArray()) } // Track item status locally
 
     val context = LocalContext.current // Get the current context
@@ -57,28 +58,32 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
             if (document != null && document.exists()) {
                 totalAmount = document.getLong("totalAmount")?.toInt() ?: order.totalPrice
                 customerName = document.getString("userName") ?: "Unknown"
-                note = document.getString("note") ?: "Have a good day :)"
+                note = document.getString("note") ?: ""
+                if (note == "") note = "Have a good day :)"
             }
         }
     }
 
     // Check if there's any item left that is not removed
     LaunchedEffect(itemState) {
-        isAnyItemSelected = itemState.any { it.status == "Selected" }
+        isAnyItemSelected = itemState.any { it.itemStatus == "Selected" }
     }
 
     var showDialog by remember { mutableStateOf(false) } // Control dialog visibility
 
     // Confirm Order Dialog
     if (showDialog) {
+        var titleText = "Confirm Order"
+        isAnyItemRemoved = itemState.any { it.itemStatus == "Removed" }
+        if (isAnyItemRemoved) titleText = "Confirm Partial Order"
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Confirm Order") },
+            title = { Text(titleText) },
             text = { Text("Are you sure you want to accept this order?") },
             confirmButton = {
                 Button(onClick = {
                     showDialog = false
-                    acceptOrder(orderId, itemState)
+                    acceptOrder(orderId, totalAmount, itemState)
                 }) {
                     Text("Confirm")
                 }
@@ -171,11 +176,14 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
         val index = itemState.indexOfFirst { it.id == itemId }
         if (index != -1) {
             val currentItem = itemState[index]
-            val newStatus = if (currentItem.status == "Selected") "Removed" else "Selected"
-            itemState[index] = currentItem.copy(status = newStatus)
+            val newStatus = if (currentItem.itemStatus == "Selected") "Removed" else "Selected"
+            itemState[index] = currentItem.copy(itemStatus = newStatus)
+
+            // Update the total price
+            if (newStatus == "Removed") totalAmount -= (currentItem.price * currentItem.quantity) else totalAmount += (currentItem.price * currentItem.quantity)
 
             // Recheck if there is any item selected after toggling
-            isAnyItemSelected = itemState.any { it.status == "Selected" }
+            isAnyItemSelected = itemState.any { it.itemStatus == "Selected" }
         }
     }
 
@@ -241,7 +249,7 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(4.dp)
-                            .alpha(if (item.status == "Removed") 0.5f else 1f), // Dim the row if item is removed
+                            .alpha(if (item.itemStatus == "Removed") 0.5f else 1f), // Dim the row if item is removed
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -283,7 +291,7 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
     }
 }
 
-fun acceptOrder(orderId: String, items: List<OrderItemData>) {
+fun acceptOrder(orderId: String, total: Int, items: List<OrderItemData>) {
     val orderRef = FirebaseFirestore.getInstance().collection("orders").document(orderId)
 
     // Update the order's status and the status of each item
@@ -293,11 +301,11 @@ fun acceptOrder(orderId: String, items: List<OrderItemData>) {
             "name" to item.name,
             "quantity" to item.quantity,
             "price" to item.price,
-            "status" to item.status
+            "itemStatus" to item.itemStatus
         )
     }
 
-    orderRef.update("items", updatedItems, "status", "Accepted")
+    orderRef.update("items", updatedItems, "status", "Confirmed", "totalAmount", total)
         .addOnSuccessListener {
             Log.d("OrderStatus", "Order $orderId accepted with items updated.")
         }

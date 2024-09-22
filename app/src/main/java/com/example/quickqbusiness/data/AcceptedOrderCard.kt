@@ -39,11 +39,9 @@ fun AcceptedOrderCard(order: AcceptedOrderData, orderId: String, modifier: Modif
         val orderRef = FirebaseFirestore.getInstance().collection("paidOrders").document(orderId)
         orderRef.get().addOnSuccessListener { document ->
             if (document != null && document.exists()) {
-                val fetchedTotalPrice = document.getLong("totalAmount")
-                totalAmount = fetchedTotalPrice?.toInt() ?: order.totalPrice
+                totalAmount = document.getLong("totalAmount")?.toInt() ?: order.totalPrice
 
-                val fetchedUserName = document.getString("userName")
-                customerName = fetchedUserName ?: "Unknown"
+                customerName = document.getString("userName") ?: "Unknown"
             }
         }
     }

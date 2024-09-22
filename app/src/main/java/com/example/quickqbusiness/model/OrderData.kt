@@ -10,7 +10,7 @@ data class OrderData(
 }
 data class OrderItemData(
     val name: String,
-    val status: String,
+    val itemStatus: String,
     val id: String,
     val quantity: Int,
     val price: Int
