@@ -9,6 +9,8 @@ import com.example.quickqbusiness.model.AcceptedOrderDataWithId
 import com.example.quickqbusiness.model.OrderData
 import com.example.quickqbusiness.model.OrderDataWithId
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import java.util.Date
 
 class OrderViewModel: ViewModel() {
     // Used in PendingOrder.kt and AcceptedOrder.kt
@@ -22,6 +24,7 @@ class OrderViewModel: ViewModel() {
     fun startListeningForPendingOrders(shopId: String) {
         firestore.collection("orders")
             .whereEqualTo("status", "Pending")
+            .orderBy("timestamp", Query.Direction.ASCENDING) // Ordering by the "time" field in ascending order
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
                     Log.w("Firestore", "Listen failed.", e)
@@ -44,7 +47,7 @@ class OrderViewModel: ViewModel() {
                         }
                     }
 
-                            _orderListWithIds.value = orderListWithIds // Update LiveData
+                    _orderListWithIds.value = orderListWithIds // Update LiveData
                 }
             }
     }

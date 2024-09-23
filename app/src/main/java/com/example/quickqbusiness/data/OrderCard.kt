@@ -1,6 +1,5 @@
 package com.example.quickqbusiness.data
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -36,7 +35,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.quickqbusiness.R
 import com.example.quickqbusiness.model.OrderData
-import com.example.quickqbusiness.model.OrderItemData
+import com.example.quickqbusiness.model.acceptOrder
+import com.example.quickqbusiness.model.declineOrder
+import com.example.quickqbusiness.model.formatTimestamp
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
@@ -45,6 +47,7 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
     var customerName by remember { mutableStateOf("") } // Store customer name
     var totalAmount by remember { mutableIntStateOf(order.totalPrice) } // Store total amount
     var note by remember { mutableStateOf("") } // Store order notes from customer
+    var time by remember { mutableStateOf(formatTimestamp(Timestamp.now())) }
     var isAnyItemSelected by remember { mutableStateOf(false) } // Check if at least one item is not removed
     var isAnyItemRemoved by remember { mutableStateOf(false) } // Check if at least one item is not removed
     val itemState = remember { mutableStateListOf(*order.items.toTypedArray()) } // Track item status locally
@@ -60,6 +63,9 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
                 customerName = document.getString("userName") ?: "Unknown"
                 note = document.getString("note") ?: ""
                 if (note == "") note = "Have a good day :)"
+                // Get the time from the Firestore document and format it
+                val firestoreTimestamp = document.getTimestamp("timestamp") ?: order.time
+                time = formatTimestamp(firestoreTimestamp) // Set the formatted time
             }
         }
     }
@@ -287,47 +293,11 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(end = 8.dp)
             )
+            Text(
+                text = "Order Time: $time",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 8.dp)
+            )
         }
     }
-}
-
-fun acceptOrder(orderId: String, total: Int, items: List<OrderItemData>) {
-    val orderRef = FirebaseFirestore.getInstance().collection("orders").document(orderId)
-
-    // Update the order's status and the status of each item
-    val updatedItems = items.map { item ->
-        mapOf(
-            "id" to item.id,
-            "name" to item.name,
-            "quantity" to item.quantity,
-            "price" to item.price,
-            "itemStatus" to item.itemStatus
-        )
-    }
-
-    orderRef.update("items", updatedItems, "status", "Confirmed", "totalAmount", total)
-        .addOnSuccessListener {
-            Log.d("OrderStatus", "Order $orderId accepted with items updated.")
-        }
-        .addOnFailureListener { e ->
-            Log.w("OrderStatus", "Error accepting order $orderId", e)
-        }
-}
-
-fun declineOrder(orderId: String, reason: String) {
-    val orderRef = FirebaseFirestore.getInstance().collection("orders").document(orderId)
-
-    // Update the status and add a new field called declineReason
-    orderRef.update(
-        mapOf(
-            "status" to "Declined",
-            "declineReason" to reason // Add a new field for the reason
-        )
-    )
-        .addOnSuccessListener {
-            Log.d("OrderStatus", "Order $orderId declined with reason: $reason")
-        }
-        .addOnFailureListener { e ->
-            Log.w("OrderStatus", "Error declining order $orderId", e)
-        }
 }
