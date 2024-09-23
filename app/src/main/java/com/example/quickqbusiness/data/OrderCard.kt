@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -28,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -76,26 +78,62 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
     }
 
     var showDialog by remember { mutableStateOf(false) } // Control dialog visibility
+    var selectedTime by remember { mutableIntStateOf(-1) } // Track selected estimate time
 
     // Confirm Order Dialog
     if (showDialog) {
         var titleText = "Confirm Order"
         isAnyItemRemoved = itemState.any { it.itemStatus == "Removed" }
         if (isAnyItemRemoved) titleText = "Confirm Partial Order"
+
+//        var selectedTime by remember { mutableStateOf(-1) } // No time selected initially
+
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text(titleText) },
-            text = { Text("Are you sure you want to accept this order?") },
+            text = {
+                Column {
+                    Text("Are you sure you want to accept this order?")
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Estimate time buttons
+                    Column {
+                        listOf(5, 10, 15, 20, 30, 45, 60).forEach { time ->
+                            Button(
+                                onClick = { selectedTime = time },
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (selectedTime == time) Color.Gray else Color.LightGray
+                                )
+                            ) {
+                                Text("$time min")
+                            }
+                        }
+                    }
+                }
+            },
             confirmButton = {
                 Button(onClick = {
-                    showDialog = false
-                    acceptOrder(orderId, totalAmount, itemState)
-                }) {
+                    if (selectedTime == -1) {
+                        // Show Toast if the reason is empty
+                        Toast.makeText(context, "Please enter an estimated time :)", Toast.LENGTH_SHORT).show()
+                    }
+                    else {
+                        showDialog = false
+                        acceptOrder(orderId, totalAmount, itemState, selectedTime) // Pass selectedTime
+                        selectedTime = -1
+                    }
+                },
+                    modifier = Modifier.alpha(if (selectedTime == -1) 0.5f else 1f) // Change opacity when disabled
+                ) {
                     Text("Confirm")
                 }
             },
             dismissButton = {
-                Button(onClick = { showDialog = false }) {
+                Button(onClick = {
+                    showDialog = false
+                    selectedTime = -1
+                }) {
                     Text("Cancel")
                 }
             }
@@ -158,9 +196,11 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
                 }
             },
             dismissButton = {
-                Button(onClick = { showDeclineDialog = false }) {
-                    Text("Cancel")
+                Button(onClick = {
+                    showDeclineDialog = false
                     declineReason = ""
+                }) {
+                    Text("Cancel")
                 }
             }
         )
@@ -214,7 +254,7 @@ fun OrderCard(order: OrderData, orderId: String, modifier: Modifier = Modifier) 
                 )
 
                 Text(
-                    text = "Total: $totalAmount", // Total Price
+                    text = "Total: ₹ $totalAmount", // Total Price
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(end = 8.dp)

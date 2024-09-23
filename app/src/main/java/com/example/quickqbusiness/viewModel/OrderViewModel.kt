@@ -10,7 +10,6 @@ import com.example.quickqbusiness.model.OrderData
 import com.example.quickqbusiness.model.OrderDataWithId
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import java.util.Date
 
 class OrderViewModel: ViewModel() {
     // Used in PendingOrder.kt and AcceptedOrder.kt

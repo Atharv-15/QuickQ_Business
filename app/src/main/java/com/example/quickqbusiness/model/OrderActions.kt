@@ -6,7 +6,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-fun acceptOrder(orderId: String, total: Int, items: List<OrderItemData>) {
+fun acceptOrder(orderId: String, total: Int, items: List<OrderItemData>, estimateTime: Int) {
     val orderRef = FirebaseFirestore.getInstance().collection("orders").document(orderId)
 
     // Update the order's status and the status of each item
@@ -20,7 +20,12 @@ fun acceptOrder(orderId: String, total: Int, items: List<OrderItemData>) {
         )
     }
 
-    orderRef.update("items", updatedItems, "status", "Confirmed", "totalAmount", total)
+    orderRef.update(
+        "items", updatedItems,
+        "status", "Confirmed",
+        "totalAmount", total,
+        "estimateTime", estimateTime
+    )
         .addOnSuccessListener {
             Log.d("OrderStatus", "Order $orderId accepted with items updated.")
         }
@@ -49,7 +54,7 @@ fun declineOrder(orderId: String, reason: String) {
 
 // Helper function to format the timestamp
 fun formatTimestamp(timestamp: Timestamp): String {
-    val sdf = SimpleDateFormat("dd MMM yyyy, hh:mm:ss a", Locale.getDefault())
+    val sdf = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
     val date = timestamp.toDate() // Convert Firestore Timestamp to Date
     return sdf.format(date)
 }
