@@ -59,6 +59,7 @@ class OrderViewModel: ViewModel() {
     fun startListeningForAcceptedOrders(shopId: String) {
         firestore.collection("paidOrders")
             .whereEqualTo("status", "Paid")
+            .orderBy("timestamp", Query.Direction.ASCENDING) // Ordering by the "time" field in ascending order
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
                     Log.w("Firestore", "Listen failed.", e)

@@ -1,11 +1,14 @@
 package com.example.quickqbusiness.model
 
+import com.google.firebase.Timestamp
+
 data class AcceptedOrderData(
     val totalPrice: Int,
-    val items: List<OrderItemData> // List of items in the order
+    val time: Timestamp,
+    val items: List<AcceptedOrderItemData> // List of items in the order
 ){
     // No-argument constructor
-    constructor() : this(0, emptyList())
+    constructor() : this(0, Timestamp.now(), emptyList())
 }
 data class AcceptedOrderItemData(
     val name: String,

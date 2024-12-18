@@ -72,7 +72,9 @@ fun AcceptedOrder(
             )
     ) {
         Column(
-            modifier = Modifier.padding(8.dp).navigationBarsPadding(),
+            modifier = Modifier
+                .padding(8.dp)
+                .navigationBarsPadding(),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
