@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.ui.Modifier
+import com.example.quickqbusiness.ui.theme.QuickQBusinessTheme
 import com.example.quickqbusiness.viewModel.AuthViewModel
 import com.example.quickqbusiness.viewModel.OrderViewModel
 import com.example.quickqbusiness.viewModel.ShopViewModel
@@ -18,7 +19,9 @@ class MainActivity : ComponentActivity() {
         val shopViewModel: ShopViewModel by viewModels()
         val orderViewModel: OrderViewModel by viewModels()
         setContent {
-            AppNavigation(modifier = Modifier, authViewModel = authViewModel, shopViewModel = shopViewModel, orderViewModel = orderViewModel)
+            QuickQBusinessTheme {
+                AppNavigation(modifier = Modifier, authViewModel = authViewModel, shopViewModel = shopViewModel, orderViewModel = orderViewModel)
+            }
         }
     }
 }
