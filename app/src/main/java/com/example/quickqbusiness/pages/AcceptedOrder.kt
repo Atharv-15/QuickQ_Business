@@ -4,19 +4,10 @@ import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,12 +19,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.quickqbusiness.data.AcceptedOrderCard
-import com.example.quickqbusiness.model.ExitConfirmationDialog
+import com.example.quickqbusiness.data.ExitConfirmationDialog
 import com.example.quickqbusiness.viewModel.AuthState
 import com.example.quickqbusiness.viewModel.AuthViewModel
 import com.example.quickqbusiness.viewModel.OrderViewModel
@@ -55,7 +45,7 @@ fun AcceptedOrder(
         }
     }
 
-    val layoutDirection = LocalLayoutDirection.current
+//    val layoutDirection = LocalLayoutDirection.current
 
     val showDialog = remember { mutableStateOf(false) }
 
@@ -88,21 +78,10 @@ fun AcceptedOrder(
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .padding(
-                start = WindowInsets.safeDrawing
-                    .asPaddingValues()
-                    .calculateStartPadding(layoutDirection),
-                end = WindowInsets.safeDrawing
-                    .asPaddingValues()
-                    .calculateEndPadding(layoutDirection)
-            )
     ) {
         Column(
             modifier = Modifier
-                .padding(8.dp)
-                .navigationBarsPadding(),
+                .padding(8.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
@@ -110,7 +89,7 @@ fun AcceptedOrder(
                 text = "Accepted Orders",
                 fontSize = 32.sp
             )
-            LazyColumn(modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)) {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(orderList) { orderDataWithId ->
                     AcceptedOrderCard(
                         order = orderDataWithId.orderData,

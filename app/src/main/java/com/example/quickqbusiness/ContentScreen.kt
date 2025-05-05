@@ -5,7 +5,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import com.example.quickqbusiness.pages.AcceptedOrder
 import com.example.quickqbusiness.pages.PendingOrder
 import com.example.quickqbusiness.pages.Profile
@@ -17,15 +19,13 @@ import com.google.firebase.auth.FirebaseAuth
 @Composable
 fun ContentScreen(
     modifier: Modifier = Modifier,
-    navController: NavController,
+    navController: NavHostController,
     authViewModel: AuthViewModel,
     shopViewModel: ShopViewModel,
-    orderViewModel: OrderViewModel,
-    selectedIndex: Int
+    orderViewModel: OrderViewModel
 ) {
     // From MainScreen.kt
-    val user = FirebaseAuth.getInstance().currentUser
-    val email = user?.email ?: ""
+    val email = FirebaseAuth.getInstance().currentUser?.email ?: ""
 
     // Fetch the shopId based on the email
     val shopId by shopViewModel.shopId.observeAsState()
@@ -37,23 +37,20 @@ fun ContentScreen(
         }
     }
 
-    when(selectedIndex) {
-        0 -> {
-            // Pass shopId to PendingOrder if it's available
+    NavHost(navController = navController, startDestination = "accepted", modifier = modifier) {
+        composable("pending") {
             shopId?.let {
-                PendingOrder(modifier, shopId = it, navController, authViewModel, orderViewModel)
+                PendingOrder(modifier, it, navController, authViewModel, orderViewModel)
             }
         }
-        1 -> {
-            // Pass shopId to AcceptedOrder if it's available
+        composable("accepted") {
             shopId?.let {
-                AcceptedOrder(modifier, shopId = it, navController, authViewModel, orderViewModel)
+                AcceptedOrder(modifier, it, navController, authViewModel, orderViewModel)
             }
         }
-        2 -> {
-            // Pass shopId to Profile if it's available
+        composable("profile") {
             shopId?.let {
-                Profile(modifier, shopId = it, authViewModel, shopViewModel)
+                Profile(modifier, it, navController, authViewModel, shopViewModel)
             }
         }
     }

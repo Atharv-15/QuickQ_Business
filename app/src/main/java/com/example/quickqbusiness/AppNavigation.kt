@@ -23,9 +23,6 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
 
-    // Fetch the shopId based on the email
-    val shopId by shopViewModel.shopId.observeAsState()
-
     NavHost(navController = navController, startDestination = "splash_screen", builder = {
         composable("splash_screen"){
             SplashScreen(navController)

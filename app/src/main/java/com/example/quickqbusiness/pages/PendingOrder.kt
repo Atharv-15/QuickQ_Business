@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Surface
@@ -60,8 +58,6 @@ fun PendingOrder(
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
             .padding(
                 start = WindowInsets.safeDrawing
                     .asPaddingValues()
@@ -73,8 +69,7 @@ fun PendingOrder(
     ) {
         Column(
             modifier = Modifier
-                .padding(8.dp)
-                .navigationBarsPadding(),
+                .padding(8.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
@@ -82,7 +77,7 @@ fun PendingOrder(
                 text = "Pending Orders",
                 fontSize = 32.sp
             )
-            LazyColumn(modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)) {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(orderList) { orderDataWithId ->
                     OrderCard(
                         order = orderDataWithId.orderData,

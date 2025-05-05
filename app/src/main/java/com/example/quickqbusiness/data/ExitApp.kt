@@ -1,4 +1,4 @@
-package com.example.quickqbusiness.model
+package com.example.quickqbusiness.data
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button

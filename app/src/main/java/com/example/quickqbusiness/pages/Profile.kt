@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -42,8 +41,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.quickqbusiness.R
 import com.example.quickqbusiness.ui.theme.DarkYellow
+import com.example.quickqbusiness.viewModel.AuthState
 import com.example.quickqbusiness.viewModel.AuthViewModel
 import com.example.quickqbusiness.viewModel.ShopViewModel
 
@@ -53,9 +54,19 @@ import com.example.quickqbusiness.viewModel.ShopViewModel
 fun Profile(
     modifier: Modifier = Modifier,
     shopId: String,
+    navController: NavController,
     authViewModel: AuthViewModel,
     shopViewModel: ShopViewModel
 ) {
+    // Check Sign in status
+    val authState = authViewModel.authState.observeAsState()
+    LaunchedEffect(authState.value) {
+        when(authState.value) {
+            is AuthState.Unauthenticated -> navController.navigate("signin")
+            else -> Unit
+        }
+    }
+
     val shopDetails by shopViewModel.shopDetails.observeAsState()
 
     LaunchedEffect(shopId) {
@@ -70,7 +81,6 @@ fun Profile(
                 onClick = { authViewModel.signOut() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .paddingFromBaseline(top = 16.dp, bottom = 145.dp)
                     .padding(horizontal = 16.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -84,7 +94,10 @@ fun Profile(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+//                .padding(paddingValues)
+                .padding(
+                    bottom = paddingValues.calculateBottomPadding()
+                ) // ONLY apply bottom padding
         ) {
             // Background
             Box(
@@ -109,7 +122,7 @@ fun Profile(
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .size(120.dp)
+                        .size(100.dp)
                         .align(Alignment.CenterHorizontally)
                         .clip(CircleShape)
                         .background(Color.White)
@@ -142,7 +155,7 @@ fun Profile(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // White scrollable surface
                 Surface(
@@ -242,8 +255,6 @@ fun ProfileOptionButton(
         }
     }
 }
-
-
 
 @Composable
 fun ProfileDetailItem(label: String, value: String?) {
