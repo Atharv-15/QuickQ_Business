@@ -15,6 +15,7 @@ class OrderViewModel: ViewModel() {
     // Used in PendingOrder.kt and AcceptedOrder.kt
     private val firestore = FirebaseFirestore.getInstance()
 
+    //-----------------------------------------------------------------------
     // For Pending Orders
     private val _orderListWithIds = MutableLiveData<List<OrderDataWithId>>()
     val orderListWithIds: LiveData<List<OrderDataWithId>> = _orderListWithIds
@@ -51,6 +52,7 @@ class OrderViewModel: ViewModel() {
             }
     }
 
+    //-----------------------------------------------------------------------
     // For Accepted Orders
     private val _acceptedOrderListWithIds = MutableLiveData<List<AcceptedOrderDataWithId>>()
     val acceptedOrderListWithIds: LiveData<List<AcceptedOrderDataWithId>> = _acceptedOrderListWithIds

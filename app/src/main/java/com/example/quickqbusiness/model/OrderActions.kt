@@ -35,20 +35,38 @@ fun acceptOrder(orderId: String, total: Int, items: List<OrderItemData>, estimat
 }
 
 fun declineOrder(orderId: String, reason: String) {
-    val orderRef = FirebaseFirestore.getInstance().collection("orders").document(orderId)
+    val db = FirebaseFirestore.getInstance()
+    val orderRef = db.collection("orders").document(orderId)
+    val declinedRef = db.collection("declinedOrders").document(orderId)
 
-    // Update the status and add a new field called declineReason
-    orderRef.update(
-        mapOf(
-            "status" to "Declined",
-            "declineReason" to reason // Add a new field for the reason
-        )
-    )
-        .addOnSuccessListener {
-            Log.d("OrderStatus", "Order $orderId declined with reason: $reason")
+    orderRef.get()
+        .addOnSuccessListener { document ->
+            if (document.exists()) {
+                val orderData = document.data?.toMutableMap() ?: mutableMapOf()
+                orderData["status"] = "Declined"
+                orderData["declineReason"] = reason
+
+                // Add to declinedOrders
+                declinedRef.set(orderData)
+                    .addOnSuccessListener {
+                        // Delete original order after successful move
+                        orderRef.delete()
+                            .addOnSuccessListener {
+                                Log.d("OrderStatus", "Order $orderId declined and moved to declinedOrders.")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w("OrderStatus", "Failed to delete original order $orderId", e)
+                            }
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w("OrderStatus", "Failed to add order to declinedOrders", e)
+                    }
+            } else {
+                Log.w("OrderStatus", "Order $orderId not found.")
+            }
         }
         .addOnFailureListener { e ->
-            Log.w("OrderStatus", "Error declining order $orderId", e)
+            Log.w("OrderStatus", "Failed to retrieve order $orderId", e)
         }
 }
 
